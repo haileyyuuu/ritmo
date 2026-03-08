@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RITMO — Content Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #f7f4ef; --bg2: #f0ebe2; --dark: #1a1612;
+    --gold: #b8965a; --gold-light: #d4b483; --muted: #8a8178;
+    --border: rgba(26,22,18,0.1); --white: #ffffff;
+  }
+  body { background: var(--bg); color: var(--dark); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; opacity: 0.4; }
+
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 3rem; border-bottom: 1px solid var(--border); position: relative; z-index: 10; background: var(--bg); }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; letter-spacing: 0.3em; font-weight: 300; }
+  .logo span { color: var(--gold); }
+  .nav-tag { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); }
+
+  .api-banner { background: var(--dark); padding: 0.8rem 3rem; display: flex; align-items: center; gap: 1.2rem; position: relative; z-index: 5; flex-wrap: wrap; }
+  .api-banner-label { font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+  .api-input-wrap { display: flex; gap: 0.5rem; flex: 1; max-width: 480px; }
+  .api-key-input { flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); color: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 0.75rem; padding: 0.5rem 0.8rem; outline: none; transition: border-color 0.2s; }
+  .api-key-input::placeholder { color: rgba(247,244,239,0.3); }
+  .api-key-input:focus { border-color: var(--gold); }
+  .api-save-btn { background: var(--gold); color: var(--dark); border: none; padding: 0.5rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+  .api-save-btn:hover { background: var(--gold-light); }
+  .api-status { font-size: 0.65rem; color: rgba(247,244,239,0.35); white-space: nowrap; }
+  .api-status.connected { color: #7ec87e; }
+
+  .hero-header { padding: 3rem 3rem 2.5rem; border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+  .hero-header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 4vw, 4.5rem); font-weight: 300; line-height: 1.05; margin-bottom: 0.7rem; }
+  .hero-header h1 em { font-style: italic; color: var(--gold); }
+  .hero-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+
+  .main { display: grid; grid-template-columns: 400px 1fr; min-height: calc(100vh - 210px); position: relative; z-index: 1; }
+
+  .input-panel { border-right: 1px solid var(--border); padding: 2rem 2.5rem; background: var(--white); overflow-y: auto; max-height: calc(100vh - 210px); }
+  .panel-label { font-size: 0.6rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; }
+  .form-group { margin-bottom: 1.5rem; }
+  .form-label { display: block; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--dark); font-family: 'DM Sans', sans-serif; font-size: 0.83rem; font-weight: 300; padding: 0.8rem 1rem; outline: none; transition: border-color 0.3s; appearance: none; border-radius: 0; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); background: var(--white); }
+  .form-textarea { resize: vertical; min-height: 70px; line-height: 1.7; }
+
+  .tone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+  .tone-option { padding: 0.6rem 0.8rem; border: 1px solid var(--border); background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 0.72rem; color: var(--muted); cursor: pointer; transition: all 0.2s; text-align: center; }
+  .tone-option:hover { border-color: var(--gold-light); color: var(--dark); }
+  .tone-option.selected { background: var(--dark); color: var(--bg); border-color: var(--dark); }
+
+  .count-selector { display: flex; gap: 0.4rem; }
+  .count-btn { flex: 1; padding: 0.6rem; border: 1px solid var(--border); background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--muted); cursor: pointer; transition: all 0.2s; text-align: center; }
+  .count-btn.selected { background: var(--dark); color: var(--bg); border-color: var(--dark); }
+
+  .toggle-wrap { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1rem; background: var(--bg); border: 1px solid var(--border); }
+  .toggle-label { font-size: 0.78rem; color: var(--dark); }
+  .toggle-sublabel { font-size: 0.63rem; color: var(--muted); margin-top: 0.15rem; }
+  .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: rgba(26,22,18,0.15); cursor: pointer; transition: 0.3s; border-radius: 22px; }
+  .toggle-slider:before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; transition: 0.3s; border-radius: 50%; }
+  input:checked + .toggle-slider { background: var(--gold); }
+  input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+  .btn-generate { width: 100%; background: var(--dark); color: var(--bg); border: none; padding: 1rem; font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase; cursor: pointer; transition: background 0.3s; margin-top: 0.8rem; }
+  .btn-generate:hover { background: var(--gold); }
+  .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; background: var(--dark); }
+  .btn-generate .loading-text { display: none; }
+  .btn-generate.loading .default-text { display: none; }
+  .btn-generate.loading .loading-text { display: inline; }
+
+  .url-row { display: flex; gap: 0.5rem; }
+  .url-row .form-input { flex: 1; }
+  .btn-analyze { background: var(--dark); color: var(--bg); border: none; padding: 0 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: background 0.2s; flex-shrink: 0; }
+  .btn-analyze:hover { background: var(--gold); }
+  .btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .output-panel { padding: 2rem 2.5rem; background: var(--bg); overflow-y: auto; max-height: calc(100vh - 210px); }
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 55vh; text-align: center; gap: 1rem; }
+  .empty-icon { font-family: 'Cormorant Garamond', serif; font-size: 5rem; color: rgba(26,22,18,0.05); line-height: 1; }
+  .empty-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--muted); }
+  .empty-sub { font-size: 0.72rem; color: rgba(138,129,120,0.5); letter-spacing: 0.1em; }
+
+  .content-grid { display: flex; flex-direction: column; gap: 2rem; }
+  .content-card { background: var(--white); border: 1px solid var(--border); padding: 2rem; animation: cardIn 0.5s ease forwards; opacity: 0; transform: translateY(20px); transition: border-color 0.3s, box-shadow 0.3s; }
+  .content-card:nth-child(1) { animation-delay: 0.05s; }
+  .content-card:nth-child(2) { animation-delay: 0.12s; }
+  .content-card:nth-child(3) { animation-delay: 0.19s; }
+  .content-card:nth-child(4) { animation-delay: 0.26s; }
+  @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
+  .content-card:hover { border-color: var(--gold-light); box-shadow: 0 4px 20px rgba(184,150,90,0.07); }
+
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .card-num { font-family: 'Cormorant Garamond', serif; font-size: 0.9rem; color: var(--gold); letter-spacing: 0.1em; }
+  .card-type { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); background: var(--bg2); padding: 0.3rem 0.6rem; }
+  .card-section-title { font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.7rem; margin-top: 1.4rem; }
+
+  .image-area { width: 100%; aspect-ratio: 1; background: var(--bg2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .image-area img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .image-placeholder { text-align: center; padding: 2rem; }
+  .image-placeholder-icon { font-size: 2rem; opacity: 0.15; margin-bottom: 0.5rem; }
+  .image-placeholder-text { font-size: 0.7rem; color: var(--muted); line-height: 1.6; }
+  .image-generating { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
+  .image-spinner { width: 24px; height: 24px; border: 1px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .image-gen-text { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; }
+
+  .image-direction { font-size: 0.8rem; line-height: 1.8; color: var(--muted); font-style: italic; background: var(--bg); padding: 0.9rem 1rem; border-left: 2px solid var(--gold-light); }
+  .caption-text { font-size: 0.88rem; line-height: 2; color: var(--dark); white-space: pre-wrap; }
+
+  .card-actions { display: flex; gap: 0.5rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .btn-copy { flex: 1; min-width: 100px; padding: 0.55rem; border: 1px solid var(--border); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+  .btn-copy:hover { background: var(--dark); color: var(--bg); border-color: var(--dark); }
+  .btn-copy.copied { background: var(--gold); color: var(--white); border-color: var(--gold); }
+
+  .skeleton-card { background: var(--white); border: 1px solid var(--border); padding: 2rem; margin-bottom: 1.5rem; }
+  .skeleton-img { width: 100%; aspect-ratio: 1; background: linear-gradient(90deg, var(--bg) 25%, var(--bg2) 50%, var(--bg) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; margin-bottom: 1rem; }
+  .skeleton-line { height: 11px; background: linear-gradient(90deg, var(--bg) 25%, var(--bg2) 50%, var(--bg) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; margin-bottom: 0.8rem; border-radius: 2px; }
+  .skeleton-line.short { width: 40%; } .skeleton-line.medium { width: 70%; } .skeleton-line.long { width: 100%; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  .error-msg { background: #fff5f5; border: 1px solid #ffcccc; color: #cc0000; padding: 1rem; font-size: 0.78rem; line-height: 1.6; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); }
+
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; }
+    .input-panel { border-right: none; border-bottom: 1px solid var(--border); max-height: none; }
+    .output-panel { max-height: none; }
+    nav, .hero-header, .input-panel, .output-panel, .api-banner { padding-left: 1.5rem; padding-right: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">RIT<span>M</span>O</div>
+  <div class="nav-tag">Content Studio for Wellness Brands</div>
+</nav>
+
+<div class="api-banner">
+  <div class="api-banner-label">OpenAI Key</div>
+  <div class="api-input-wrap">
+    <input type="password" class="api-key-input" id="openaiKey" placeholder="sk-... (이미지 생성에 필요해요)">
+    <button class="api-save-btn" onclick="saveApiKey()">Save</button>
+  </div>
+  <div class="api-status" id="apiStatus">미연결 — 이미지 생성 비활성</div>
+</div>
+
+<div class="hero-header">
+  <h1>Your brand's<br><em>ritual</em>, automated.</h1>
+  <p class="hero-sub">브랜드 정보를 입력하면 — 감성 콘텐츠와 이미지를 만들어드려요.</p>
+</div>
+
+<div class="main">
+  <div class="input-panel">
+    <p class="panel-label">Brand Input</p>
+
+    <div class="form-group">
+      <label class="form-label">브랜드명 Brand Name</label>
+      <input type="text" class="form-input" id="brandName" placeholder="e.g. Aurum, Glow Lab...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">카테고리 Category</label>
+      <select class="form-select" id="category">
+        <option value="">선택해주세요</option>
+        <option value="skincare">Skincare / 스킨케어</option>
+        <option value="fragrance">Fragrance / 향수</option>
+        <option value="wellness">Wellness / 웰니스</option>
+        <option value="haircare">Haircare / 헤어케어</option>
+        <option value="bodycare">Body Care / 바디케어</option>
+        <option value="supplement">Supplement / 서플리먼트</option>
+        <option value="fashion">Fashion / 패션</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">타겟 Target Audience</label>
+      <input type="text" class="form-input" id="target" placeholder="e.g. 20~30대 여성, wellness-conscious...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">브랜드 톤 Brand Tone</label>
+      <div class="tone-grid">
+        <div class="tone-option" data-tone="luxury minimal">Luxury Minimal</div>
+        <div class="tone-option" data-tone="natural organic">Natural Organic</div>
+        <div class="tone-option" data-tone="edgy sophisticated">Edgy & Sophisticated</div>
+        <div class="tone-option" data-tone="soft feminine">Soft Feminine</div>
+        <div class="tone-option" data-tone="clinical clean">Clinical Clean</div>
+        <div class="tone-option" data-tone="bohemian ritual">Bohemian Ritual</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">핵심 키워드 Keywords</label>
+      <input type="text" class="form-input" id="keywords" placeholder="e.g. ritual, glow, clean beauty, intentional">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">레퍼런스 웹사이트 (선택)</label>
+      <div class="url-row">
+        <input type="text" class="form-input" id="refUrl" placeholder="https://aesop.com">
+        <button class="btn-analyze" id="analyzeBtn" onclick="analyzeWebsite()">Analyze</button>
+      </div>
+      <div id="urlStatus" style="margin-top:0.4rem;font-size:0.7rem;color:var(--muted);min-height:1em;"></div>
+      <textarea class="form-textarea" id="refVibe" placeholder="분석된 브랜드 바이브..." style="margin-top:0.4rem;display:none;"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">추가 정보 (선택)</label>
+      <textarea class="form-textarea" id="extra" placeholder="신제품 출시, 시즌 캠페인 등..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">콘텐츠 수</label>
+      <div class="count-selector">
+        <div class="count-btn selected" data-count="3">3</div>
+        <div class="count-btn" data-count="6">6</div>
+        <div class="count-btn" data-count="9">9</div>
+        <div class="count-btn" data-count="12">12</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="toggle-wrap">
+        <div>
+          <div class="toggle-label">이미지 자동 생성</div>
+          <div class="toggle-sublabel">OpenAI 키 필요 · 장당 약 ₩60</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="imageToggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn-generate" id="generateBtn" onclick="generateContent()">
+      <span class="default-text">Generate Content ✦</span>
+      <span class="loading-text">Generating...</span>
+    </button>
+  </div>
+
+  <div class="output-panel">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">✦</div>
+      <div class="empty-title">Ready to create.</div>
+      <div class="empty-sub">브랜드 정보를 입력하고 생성해보세요</div>
+    </div>
+    <div class="content-grid" id="contentGrid" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+  let selectedTone = '';
+  let selectedCount = 3;
+  let savedOpenAIKey = '';
+
+  document.querySelectorAll('.tone-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tone-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedTone = btn.dataset.tone;
+    });
+  });
+
+  document.querySelectorAll('.count-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedCount = parseInt(btn.dataset.count);
+    });
+  });
+
+  function saveApiKey() {
+    const key = document.getElementById('openaiKey').value.trim();
+    if (!key || !key.startsWith('sk-')) {
+      document.getElementById('apiStatus').textContent = '올바른 키를 입력해주세요 (sk-로 시작)';
+      return;
+    }
+    savedOpenAIKey = key;
+    document.getElementById('apiStatus').textContent = '✦ 연결됨 — 이미지 생성 활성';
+    document.getElementById('apiStatus').className = 'api-status connected';
+    document.getElementById('openaiKey').value = '••••••••••••••••••••••••';
+    document.getElementById('imageToggle').checked = true;
+  }
+
+  async function analyzeWebsite() {
+    const url = document.getElementById('refUrl').value.trim();
+    if (!url) return;
+    const btn = document.getElementById('analyzeBtn');
+    const status = document.getElementById('urlStatus');
+    const vibeBox = document.getElementById('refVibe');
+    btn.disabled = true; btn.textContent = '...';
+    status.textContent = '웹사이트 분석 중...'; status.style.color = 'var(--muted)';
+    vibeBox.style.display = 'none';
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514', max_tokens: 800,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user', content: 'Search for and analyze this brand: ' + url + '. Describe: visual aesthetic, copywriting tone, core values/keywords, target audience, overall vibe. Be specific and concise. English only.' }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content.filter(i => i.type === 'text').map(i => i.text).join('');
+      if (text) {
+        vibeBox.value = text; vibeBox.style.display = 'block';
+        status.textContent = '✦ 바이브 분석 완료'; status.style.color = 'var(--gold)';
+      } else { throw new Error('no text'); }
+    } catch {
+      status.textContent = '분석 실패. 직접 입력해주세요.';
+      vibeBox.style.display = 'block';
+    } finally { btn.disabled = false; btn.textContent = 'Analyze'; }
+  }
+
+  async function generateImage(imageDirection, cardIndex) {
+    if (!savedOpenAIKey) return;
+    const area = document.getElementById('img-' + cardIndex);
+    if (!area) return;
+    area.innerHTML = '<div class="image-generating"><div class="image-spinner"></div><div class="image-gen-text">이미지 생성 중...</div></div>';
+    try {
+      const dallePrompt = 'Editorial luxury wellness photography: ' + imageDirection + ' Style: cinematic natural light, minimal, high-end magazine aesthetic, warm tones, no visible faces, no text overlays.';
+      const res = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + savedOpenAIKey },
+        body: JSON.stringify({ model: 'dall-e-3', prompt: dallePrompt, n: 1, size: '1024x1024', quality: 'standard' })
+      });
+      const data = await res.json();
+      if (data.data && data.data[0] && data.data[0].url) {
+        const imgUrl = data.data[0].url;
+        area.innerHTML = '<img src="' + imgUrl + '" alt="Generated image" />';
+        const dlBtn = document.getElementById('dl-' + cardIndex);
+        if (dlBtn) { dlBtn.style.display = 'block'; dlBtn.onclick = () => { window.open(imgUrl, '_blank'); }; }
+      } else {
+        area.innerHTML = '<div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">' + (data.error ? data.error.message : '이미지 생성 실패') + '</div></div>';
+      }
+    } catch (err) {
+      area.innerHTML = '<div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">생성 실패. API 키를 확인해주세요.</div></div>';
+    }
+  }
+
+  function showSkeletons(count, withImages) {
+    const grid = document.getElementById('contentGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      grid.innerHTML += '<div class="skeleton-card">' + (withImages ? '<div class="skeleton-img"></div>' : '') + '<div class="skeleton-line short"></div><div style="height:1px;background:var(--border);margin:1rem 0;"></div><div class="skeleton-line short"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:1rem;"></div><div class="skeleton-line long"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div></div>';
+    }
+    grid.style.display = 'flex';
+    document.getElementById('emptyState').style.display = 'none';
+  }
+
+  async function generateContent() {
+    const brandName = document.getElementById('brandName').value.trim();
+    const category = document.getElementById('category').value;
+    const target = document.getElementById('target').value.trim();
+    const keywords = document.getElementById('keywords').value.trim();
+    const extra = document.getElementById('extra').value.trim();
+    const refVibe = document.getElementById('refVibe').value.trim();
+    const withImages = document.getElementById('imageToggle').checked;
+
+    if (!brandName || !category) { alert('브랜드명과 카테고리는 필수예요 🌿'); return; }
+    if (withImages && !savedOpenAIKey) { alert('이미지 생성을 위해 상단에 OpenAI API 키를 먼저 저장해주세요.'); return; }
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true; btn.classList.add('loading');
+    showSkeletons(selectedCount, withImages);
+
+    const prompt = `You are RITMO, an expert Instagram content creator for wellness, beauty, and lifestyle brands with a luxury, editorial aesthetic.
+
+Create exactly ${selectedCount} Instagram content pieces for:
+Brand: ${brandName}
+Category: ${category}
+Target: ${target || '20-35 year old women interested in wellness and beauty'}
+Tone: ${selectedTone || 'luxury minimal'}
+Keywords: ${keywords || 'ritual, glow, wellness, intentional living'}
+${extra ? 'Context: ' + extra : ''}
+${refVibe ? 'Reference Brand Vibe (match this closely): ' + refVibe : ''}
+
+RULES:
+- Mix Korean and English naturally and elegantly
+- Never be sales-y — show lifestyle, not product
+- Captions feel like poetry, with intentional line breaks
+- Image directions: cinematic, specific, no faces, focus on objects/hands/atmosphere
+- Each post has a distinct mood/theme
+
+- For each post, recommend 2-3 real songs that match the mood. Think Frank Ocean, SZA, Solange, Jhene Aiko, Daniel Caesar, FKA Twigs, Sade, Air, Bon Iver, Cigarettes After Sex, Khruangbin, Blood Orange, Yaeji and similar artists.
+Return ONLY raw JSON array, no markdown, no explanation:
+[{"number":1,"type":"Lifestyle","imageDirection":"Cinematic DALL-E prompt: specific objects, lighting, composition, mood. No faces. 2-3 sentences.","caption":"Full caption with Korean+English mix, line breaks for rhythm, max 2 emojis","music":[{"title":"Song Title","artist":"Artist Name","vibe":"why this fits in one short sentence"},{"title":"Song Title","artist":"Artist Name","vibe":"why this fits"}]}]`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, messages: [{ role: 'user', content: prompt }] })
+      });
+      const data = await res.json();
+      const text = data.content.map(i => i.text || '').join('');
+      const posts = JSON.parse(text.replace(/```json|```/g, '').trim());
+      renderContent(posts, withImages);
+    } catch (err) {
+      document.getElementById('contentGrid').innerHTML = '<div class="error-msg">콘텐츠 생성 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.<br><small>' + err.message + '</small></div>';
+    } finally {
+      btn.disabled = false; btn.classList.remove('loading');
+    }
+  }
+
+  function renderContent(posts, withImages) {
+    const grid = document.getElementById('contentGrid');
+    grid.innerHTML = '';
+    posts.forEach((post, i) => {
+      const safeDir = (post.imageDirection || '').replace(/`/g, "'").replace(/\n/g, ' ');
+      const safeCaption = (post.caption || '').replace(/`/g, "'");
+      const card = document.createElement('div');
+      card.className = 'content-card';
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="card-num">No. 0${post.number || i+1}</div>
+          <div class="card-type">${post.type || 'Lifestyle'}</div>
+        </div>
+        ${withImages ? `
+          <div class="card-section-title">🖼 Image</div>
+          <div class="image-area" id="img-${i}">
+            <div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">준비 중...</div></div>
+          </div>
+          <button class="btn-copy" id="dl-${i}" style="width:100%;margin-top:0.4rem;display:none;">↓ Open Image</button>
+          <button class="btn-copy" style="width:100%;margin-top:0.3rem;" onclick="generateImage('${safeDir.replace(/'/g, "\\'")}', ${i})">↺ 이미지 재생성</button>
+        ` : ''}
+        <div class="card-section-title">📷 Image Direction</div>
+        <div class="image-direction">${post.imageDirection}</div>
+        <div class="card-section-title">✦ Caption</div>
+        <div class="caption-text" id="cap-${i}">${post.caption}</div>
+        ${post.music && post.music.length ? `
+        <div class="card-section-title" style="margin-top:1.4rem;">🎵 Music Reference</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+          ${post.music.map(m => `
+          <div style="background:var(--bg);border:1px solid var(--border);padding:0.8rem 1rem;display:flex;flex-direction:column;gap:0.2rem;">
+            <div style="font-size:0.82rem;color:var(--dark);">${m.title} <span style="color:var(--muted);font-size:0.75rem;">— ${m.artist}</span></div>
+            <div style="font-size:0.68rem;color:var(--gold);font-style:italic;">${m.vibe}</div>
+          </div>`).join('')}
+        </div>` : ''}
+        <div class="card-actions">
+          <button class="btn-copy" onclick="copyEl('cap-${i}', this, 'Copy Caption')">Copy Caption</button>
+          <button class="btn-copy" onclick="copyBoth(this, '${safeDir.replace(/'/g, "\\'")}', '${safeCaption.replace(/'/g, "\\'")}')">Copy All</button>
+        </div>`;
+      grid.appendChild(card);
+      if (withImages) generateImage(post.imageDirection, i);
+    });
+    grid.style.display = 'flex';
+    document.getElementById('emptyState').style.display = 'none';
+  }
+
+  function copyEl(id, btn, label) {
+    navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+      btn.textContent = 'Copied ✓'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function copyBoth(btn, dir, caption) {
+    navigator.clipboard.writeText('📷 IMAGE DIRECTION:\n' + dir + '\n\n✦ CAPTION:\n' + caption).then(() => {
+      btn.textContent = 'Copied ✓'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy All'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
