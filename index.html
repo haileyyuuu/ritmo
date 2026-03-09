@@ -140,14 +140,7 @@
   <div class="nav-tag">Content Studio for Wellness Brands</div>
 </nav>
 
-<div class="api-banner">
-  <div class="api-banner-label">OpenAI Key</div>
-  <div class="api-input-wrap">
-    <input type="password" class="api-key-input" id="openaiKey" placeholder="sk-... (이미지 생성에 필요해요)">
-    <button class="api-save-btn" onclick="saveApiKey()">Save</button>
-  </div>
-  <div class="api-status" id="apiStatus">미연결 — 이미지 생성 비활성</div>
-</div>
+
 
 <div class="hero-header">
   <h1>Your brand's<br><em>ritual</em>, automated.</h1>
@@ -256,8 +249,6 @@
 <script>
   let selectedTone = '';
   let selectedCount = 3;
-  let savedOpenAIKey = '';
-
   document.querySelectorAll('.tone-option').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tone-option').forEach(b => b.classList.remove('selected'));
@@ -274,18 +265,7 @@
     });
   });
 
-  function saveApiKey() {
-    const key = document.getElementById('openaiKey').value.trim();
-    if (!key || !key.startsWith('sk-')) {
-      document.getElementById('apiStatus').textContent = '올바른 키를 입력해주세요 (sk-로 시작)';
-      return;
-    }
-    savedOpenAIKey = key;
-    document.getElementById('apiStatus').textContent = '✦ 연결됨 — 이미지 생성 활성';
-    document.getElementById('apiStatus').className = 'api-status connected';
-    document.getElementById('openaiKey').value = '••••••••••••••••••••••••';
-    document.getElementById('imageToggle').checked = true;
-  }
+
 
   async function analyzeWebsite() {
     const url = document.getElementById('refUrl').value.trim();
@@ -319,16 +299,15 @@
   }
 
   async function generateImage(imageDirection, cardIndex) {
-    if (!savedOpenAIKey) return;
     const area = document.getElementById('img-' + cardIndex);
     if (!area) return;
     area.innerHTML = '<div class="image-generating"><div class="image-spinner"></div><div class="image-gen-text">이미지 생성 중...</div></div>';
     try {
       const dallePrompt = 'Editorial luxury wellness photography: ' + imageDirection + ' Style: cinematic natural light, minimal, high-end magazine aesthetic, warm tones, no visible faces, no text overlays.';
-      const res = await fetch('https://api.openai.com/v1/images/generations', {
+      const res = await fetch('/api/image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + savedOpenAIKey },
-        body: JSON.stringify({ model: 'dall-e-3', prompt: dallePrompt, n: 1, size: '1024x1024', quality: 'standard' })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: dallePrompt })
       });
       const data = await res.json();
       if (data.data && data.data[0] && data.data[0].url) {
@@ -340,7 +319,7 @@
         area.innerHTML = '<div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">' + (data.error ? data.error.message : '이미지 생성 실패') + '</div></div>';
       }
     } catch (err) {
-      area.innerHTML = '<div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">생성 실패. API 키를 확인해주세요.</div></div>';
+      area.innerHTML = '<div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">생성 실패.</div></div>';
     }
   }
 
