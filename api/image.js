@@ -28,47 +28,23 @@ export default async function handler(req, res) {
     });
 
     const submitData = await submitRes.json();
-    
-    // Log for debugging
-    console.log('Submit response:', JSON.stringify(submitData));
-    
     const requestId = submitData.request_id;
     if (!requestId) return res.status(500).json({ error: 'No request_id: ' + JSON.stringify(submitData) });
 
-    let result = null;
     for (let i = 0; i < 30; i++) {
       await new Promise(r => setTimeout(r, 2000));
-      const pollRes = await fetch(`https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra/requests/${requestId}`, {
+      const pollRes = await fetch('https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra/requests/' + requestId, {
         headers: { 'Authorization': 'Key ' + apiKey }
       });
       const pollData = await pollRes.json();
-      console.log('Poll response:', JSON.stringify(pollData));
-      
-      if (pollData.images && pollData.images.length > 0) {
-        result = pollData;
-        break;
-      }
-      if (pollData.status === 'COMPLETED') {
-        result = pollData;
-        break;
+      if (pollData.images && pollData.images[0]) {
+        return res.status(200).json({ data: [{ url: pollData.images[0].url }] });
       }
       if (pollData.status === 'FAILED') {
-        return res.status(500).json({ error: 'Generation failed: ' + JSON.stringify(pollData) });
+        return res.status(500).json({ error: 'Generation failed' });
       }
     }
-
-    if (!result) return res.status(500).json({ error: 'Timeout' });
-
-    // Try different response structures
-    const imageUrl = 
-      result?.images?.[0]?.url ||
-      result?.image?.url ||
-      result?.output?.[0] ||
-      result?.url;
-
-    if (!imageUrl) return res.status(500).json({ error: 'No image URL in: ' + JSON.stringify(result) });
-
-    return res.status(200).json({ data: [{ url: imageUrl }] });
+    return res.status(500).json({ error: 'Timeout' });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
