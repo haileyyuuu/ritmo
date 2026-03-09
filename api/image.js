@@ -27,16 +27,28 @@ export default async function handler(req, res) {
       })
     });
 
-    const submitData = await submitRes.json();
+    const submitText = await submitRes.text();
+    console.log('Submit raw:', submitText);
+    
+    let submitData;
+    try { submitData = JSON.parse(submitText); } 
+    catch(e) { return res.status(500).json({ error: 'Submit parse error: ' + submitText.slice(0, 200) }); }
+    
     const requestId = submitData.request_id;
-    if (!requestId) return res.status(500).json({ error: 'No request_id: ' + JSON.stringify(submitData) });
+    if (!requestId) return res.status(500).json({ error: 'No request_id: ' + submitText.slice(0, 200) });
 
     for (let i = 0; i < 30; i++) {
       await new Promise(r => setTimeout(r, 2000));
       const pollRes = await fetch('https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra/requests/' + requestId, {
         headers: { 'Authorization': 'Key ' + apiKey }
       });
-      const pollData = await pollRes.json();
+      const pollText = await pollRes.text();
+      console.log('Poll raw:', pollText.slice(0, 300));
+      
+      let pollData;
+      try { pollData = JSON.parse(pollText); }
+      catch(e) { continue; }
+      
       if (pollData.images && pollData.images[0]) {
         return res.status(200).json({ data: [{ url: pollData.images[0].url }] });
       }
