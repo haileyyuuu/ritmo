@@ -8,27 +8,54 @@ export default async function handler(req, res) {
 
   try {
     const { prompt } = req.body;
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.FAL_API_KEY;
 
     if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    const submitRes = await fetch('https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey
+        'Authorization': 'Key ' + apiKey
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
         prompt: prompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'hd'
+        num_images: 1,
+        aspect_ratio: '4:5',
+        output_format: 'jpeg',
+        safety_tolerance: '5'
       })
     });
 
-    const data = await response.json();
-    return res.status(200).json(data);
+    const submitData = await submitRes.json();
+    const requestId = submitData.request_id;
+
+    if (!requestId) return res.status(500).json({ error: 'Failed to submit job' });
+
+    let result = null;
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      const pollRes = await fetch(`https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra/requests/${requestId}`, {
+        headers: { 'Authorization': 'Key ' + apiKey }
+      });
+      const pollData = await pollRes.json();
+      if (pollData.status === 'COMPLETED' || pollData.images) {
+        result = pollData;
+        break;
+      }
+      if (pollData.status === 'FAILED') {
+        return res.status(500).json({ error: 'Image generation failed' });
+      }
+    }
+
+    if (!result || !result.images || !result.images[0]) {
+      return res.status(500).json({ error: 'Timeout or no image returned' });
+    }
+
+    return res.status(200).json({
+      data: [{ url: result.images[0].url }]
+    });
+
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
