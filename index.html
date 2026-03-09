@@ -399,8 +399,13 @@ Return ONLY raw JSON array, no markdown, no explanation:
         body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, messages: [{ role: 'user', content: prompt }] })
       });
       const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (!data.content || !data.content.length) throw new Error('응답이 비어있어요');
       const text = data.content.map(i => i.text || '').join('');
-      const posts = JSON.parse(text.replace(/```json|```/g, '').trim());
+      const clean = text.replace(/```json|```/g, '').trim();
+      const jsonMatch = clean.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) throw new Error('JSON을 찾을 수 없어요');
+      const posts = JSON.parse(jsonMatch[0]);
       renderContent(posts, withImages);
     } catch (err) {
       document.getElementById('contentGrid').innerHTML = '<div class="error-msg">콘텐츠 생성 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.<br><small>' + err.message + '</small></div>';
