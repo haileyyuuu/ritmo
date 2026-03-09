@@ -221,7 +221,7 @@
       <div class="toggle-wrap">
         <div>
           <div class="toggle-label">이미지 자동 생성</div>
-          <div class="toggle-sublabel">장당 약 ₩60</div>
+
         </div>
         <label class="toggle">
           <input type="checkbox" id="imageToggle">
@@ -301,26 +301,51 @@
   async function generateImage(imageDirection, cardIndex) {
     const area = document.getElementById('img-' + cardIndex);
     if (!area) return;
-    area.innerHTML = '<div class="image-generating"><div class="image-spinner"></div><div class="image-gen-text">이미지 생성 중...</div></div>';
+    area.innerHTML = '<div class="image-generating"><div class="image-spinner"></div><div class="image-gen-text">이미지 생성 중... (20~30초)</div></div>';
     try {
-      const dallePrompt = 'Ultra-realistic luxury editorial photography, shot on Phase One medium format camera, 85mm lens, f/1.8 aperture. ' + imageDirection + ' Lighting: soft golden hour natural light with subtle rim light, shot in a minimal high-end studio or outdoor setting. Color grade: warm analog film tones, slightly desaturated, Kodak Portra 400 aesthetic. Texture: visible grain, cinematic depth of field, hyper-detailed surfaces. Style: Vogue, Kinfolk, Cereal Magazine editorial. No faces, no text, no watermarks. Photorealistic, 8K resolution.';
-      const res = await fetch('/api/image', {
+      const falKey = await getFalKey();
+      if (!falKey) { area.innerHTML = '<div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">이미지 키 없음</div></div>'; return; }
+
+      const prompt = 'Ultra-realistic luxury editorial photography, shot on Phase One medium format camera, 85mm lens, f/1.8 aperture. ' + imageDirection + ' Lighting: soft golden hour natural light with subtle rim light. Color grade: warm analog film tones, Kodak Portra 400 aesthetic. Style: Vogue, Kinfolk, Cereal Magazine editorial. No faces, no text, no watermarks. Photorealistic, 8K resolution.';
+
+      // Submit to fal.ai queue
+      const submitRes = await fetch('https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: dallePrompt })
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Key ' + falKey },
+        body: JSON.stringify({ prompt, num_images: 1, aspect_ratio: '4:5', output_format: 'jpeg', safety_tolerance: '5' })
       });
-      const data = await res.json();
-      if (data.data && data.data[0] && data.data[0].url) {
-        const imgUrl = data.data[0].url;
-        area.innerHTML = '<img src="' + imgUrl + '" alt="Generated image" />';
-        const dlBtn = document.getElementById('dl-' + cardIndex);
-        if (dlBtn) { dlBtn.style.display = 'block'; dlBtn.onclick = () => { window.open(imgUrl, '_blank'); }; }
-      } else {
-        area.innerHTML = '<div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">' + (data.error ? data.error.message : '이미지 생성 실패') + '</div></div>';
+      const submitData = await submitRes.json();
+      const requestId = submitData.request_id;
+      if (!requestId) throw new Error('제출 실패');
+
+      // Poll for result
+      for (let i = 0; i < 40; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+        const pollRes = await fetch('https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra/requests/' + requestId, {
+          headers: { 'Authorization': 'Key ' + falKey }
+        });
+        const pollData = await pollRes.json();
+        if (pollData.images && pollData.images[0]) {
+          const imgUrl = pollData.images[0].url;
+          area.innerHTML = '<img src="' + imgUrl + '" alt="Generated image" />';
+          const dlBtn = document.getElementById('dl-' + cardIndex);
+          if (dlBtn) { dlBtn.style.display = 'block'; dlBtn.onclick = () => { window.open(imgUrl, '_blank'); }; }
+          return;
+        }
+        if (pollData.status === 'FAILED') throw new Error('생성 실패');
       }
+      throw new Error('시간 초과');
     } catch (err) {
-      area.innerHTML = '<div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">생성 실패.</div></div>';
+      area.innerHTML = '<div class="image-placeholder"><div class="image-placeholder-icon">✦</div><div class="image-placeholder-text">생성 실패: ' + err.message + '</div></div>';
     }
+  }
+
+  async function getFalKey() {
+    try {
+      const res = await fetch('/api/falkey');
+      const data = await res.json();
+      return data.key;
+    } catch { return null; }
   }
 
   function showSkeletons(count, withImages) {
