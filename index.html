@@ -297,7 +297,7 @@
     status.textContent = '웹사이트 분석 중...'; status.style.color = 'var(--muted)';
     vibeBox.style.display = 'none';
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -393,7 +393,7 @@ Return ONLY raw JSON array, no markdown, no explanation:
 [{"number":1,"type":"Lifestyle","imageDirection":"Cinematic DALL-E prompt: specific objects, lighting, composition, mood. No faces. 2-3 sentences.","caption":"Full caption with Korean+English mix, line breaks for rhythm, max 2 emojis","music":[{"title":"Song Title","artist":"Artist Name","vibe":"why this fits in one short sentence"},{"title":"Song Title","artist":"Artist Name","vibe":"why this fits"}]}]`;
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, messages: [{ role: 'user', content: prompt }] })
