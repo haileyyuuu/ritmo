@@ -28,9 +28,12 @@ export default async function handler(req, res) {
     });
 
     const submitData = await submitRes.json();
+    
+    // Log for debugging
+    console.log('Submit response:', JSON.stringify(submitData));
+    
     const requestId = submitData.request_id;
-
-    if (!requestId) return res.status(500).json({ error: 'Failed to submit job' });
+    if (!requestId) return res.status(500).json({ error: 'No request_id: ' + JSON.stringify(submitData) });
 
     let result = null;
     for (let i = 0; i < 30; i++) {
@@ -39,22 +42,33 @@ export default async function handler(req, res) {
         headers: { 'Authorization': 'Key ' + apiKey }
       });
       const pollData = await pollRes.json();
-      if (pollData.status === 'COMPLETED' || pollData.images) {
+      console.log('Poll response:', JSON.stringify(pollData));
+      
+      if (pollData.images && pollData.images.length > 0) {
+        result = pollData;
+        break;
+      }
+      if (pollData.status === 'COMPLETED') {
         result = pollData;
         break;
       }
       if (pollData.status === 'FAILED') {
-        return res.status(500).json({ error: 'Image generation failed' });
+        return res.status(500).json({ error: 'Generation failed: ' + JSON.stringify(pollData) });
       }
     }
 
-    if (!result || !result.images || !result.images[0]) {
-      return res.status(500).json({ error: 'Timeout or no image returned' });
-    }
+    if (!result) return res.status(500).json({ error: 'Timeout' });
 
-    return res.status(200).json({
-      data: [{ url: result.images[0].url }]
-    });
+    // Try different response structures
+    const imageUrl = 
+      result?.images?.[0]?.url ||
+      result?.image?.url ||
+      result?.output?.[0] ||
+      result?.url;
+
+    if (!imageUrl) return res.status(500).json({ error: 'No image URL in: ' + JSON.stringify(result) });
+
+    return res.status(200).json({ data: [{ url: imageUrl }] });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
