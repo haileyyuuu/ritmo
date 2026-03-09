@@ -343,7 +343,7 @@
     const withImages = document.getElementById('imageToggle').checked;
 
     if (!brandName || !category) { alert('브랜드명과 카테고리는 필수예요 🌿'); return; }
-    if (withImages && !savedOpenAIKey) { alert('이미지 생성을 위해 상단에 OpenAI API 키를 먼저 저장해주세요.'); return; }
+
 
     const btn = document.getElementById('generateBtn');
     btn.disabled = true; btn.classList.add('loading');
