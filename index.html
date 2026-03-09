@@ -303,7 +303,7 @@
     if (!area) return;
     area.innerHTML = '<div class="image-generating"><div class="image-spinner"></div><div class="image-gen-text">이미지 생성 중...</div></div>';
     try {
-      const dallePrompt = 'Editorial luxury wellness photography: ' + imageDirection + ' Style: cinematic natural light, minimal, high-end magazine aesthetic, warm tones, no visible faces, no text overlays.';
+      const dallePrompt = 'Ultra-realistic luxury editorial photography, shot on Phase One medium format camera, 85mm lens, f/1.8 aperture. ' + imageDirection + ' Lighting: soft golden hour natural light with subtle rim light, shot in a minimal high-end studio or outdoor setting. Color grade: warm analog film tones, slightly desaturated, Kodak Portra 400 aesthetic. Texture: visible grain, cinematic depth of field, hyper-detailed surfaces. Style: Vogue, Kinfolk, Cereal Magazine editorial. No faces, no text, no watermarks. Photorealistic, 8K resolution.';
       const res = await fetch('/api/image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
