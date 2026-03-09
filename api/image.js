@@ -12,7 +12,8 @@ export default async function handler(req, res) {
 
     if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
-    const submitRes = await fetch('https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra', {
+    // Use direct run endpoint instead of queue
+    const runRes = await fetch('https://fal.run/fal-ai/flux/schnell', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -21,42 +22,23 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         prompt: prompt,
         num_images: 1,
-        aspect_ratio: '4:5',
-        output_format: 'jpeg',
-        safety_tolerance: '5'
+        image_size: 'portrait_4_3',
+        num_inference_steps: 4
       })
     });
 
-    const submitText = await submitRes.text();
-    console.log('Submit raw:', submitText);
+    const text = await runRes.text();
+    console.log('fal response:', text.slice(0, 500));
     
-    let submitData;
-    try { submitData = JSON.parse(submitText); } 
-    catch(e) { return res.status(500).json({ error: 'Submit parse error: ' + submitText.slice(0, 200) }); }
-    
-    const requestId = submitData.request_id;
-    if (!requestId) return res.status(500).json({ error: 'No request_id: ' + submitText.slice(0, 200) });
+    let data;
+    try { data = JSON.parse(text); }
+    catch(e) { return res.status(500).json({ error: 'Parse error: ' + text.slice(0, 200) }); }
 
-    for (let i = 0; i < 30; i++) {
-      await new Promise(r => setTimeout(r, 2000));
-      const pollRes = await fetch('https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra/requests/' + requestId, {
-        headers: { 'Authorization': 'Key ' + apiKey }
-      });
-      const pollText = await pollRes.text();
-      console.log('Poll raw:', pollText.slice(0, 300));
-      
-      let pollData;
-      try { pollData = JSON.parse(pollText); }
-      catch(e) { continue; }
-      
-      if (pollData.images && pollData.images[0]) {
-        return res.status(200).json({ data: [{ url: pollData.images[0].url }] });
-      }
-      if (pollData.status === 'FAILED') {
-        return res.status(500).json({ error: 'Generation failed' });
-      }
+    if (data.images && data.images[0]) {
+      return res.status(200).json({ data: [{ url: data.images[0].url }] });
     }
-    return res.status(500).json({ error: 'Timeout' });
+    
+    return res.status(500).json({ error: 'No image: ' + text.slice(0, 200) });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
