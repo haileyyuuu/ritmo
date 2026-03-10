@@ -442,11 +442,12 @@ ${extra ? 'Context: ' + extra : ''}
 ${refVibe ? 'Reference Brand Vibe (match this closely): ' + refVibe : ''}
 
 RULES:
-- Language rule: ${selectedLang === 'korean' ? '모든 캡션을 한국어로만 작성해주세요. 영어 혼용 없이 순수 한국어로.' : selectedLang === 'english' ? 'Write all captions in English only. No Korean.' : 'Mix Korean and English naturally and elegantly — Korean for emotion, English for aesthetic keywords.'}
+- CRITICAL LANGUAGE RULE: ${selectedLang === 'korean' ? 'ALL captions must be written in Korean ONLY. Absolutely no English words, phrases, or characters anywhere in the captions. Pure Korean throughout.' : selectedLang === 'english' ? 'ALL captions must be written in English ONLY. Absolutely no Korean characters (한글) anywhere. Not a single Korean word. Pure English throughout.' : 'Mix Korean and English naturally and elegantly — Korean for emotion, English for aesthetic keywords.'}
 - Never be sales-y — show lifestyle, not product
 - Captions feel like poetry, with intentional line breaks
 - Image directions: cinematic, specific, no faces, focus on objects/hands/atmosphere
 - Each post has a distinct mood/theme
+- Every caption must include ONE subtle engagement hook — a question, an open-ended thought, or a relatable feeling that makes people want to comment or share. Never forced or sales-y. Examples: "오늘 당신의 루틴은?" / "Which one are you — morning ritual or evening wind-down?" / "Tag someone who needs this." Keep it natural and poetic, never clickbait.
 
 - For each post, recommend 2-3 real songs that match the mood. Think Frank Ocean, SZA, Solange, Jhene Aiko, Daniel Caesar, FKA Twigs, Sade, Air, Bon Iver, Cigarettes After Sex, Khruangbin, Blood Orange, Yaeji and similar artists.
 Return ONLY raw JSON array, no markdown, no explanation:
