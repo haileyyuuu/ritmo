@@ -135,6 +135,12 @@
   .ui-lang-toggle { display: flex; border: 1px solid var(--border); overflow: hidden; }
   .ui-lang-btn { padding: 0.3rem 0.7rem; font-family: 'DM Sans', sans-serif; font-size: 0.65rem; letter-spacing: 0.1em; border: none; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s; }
   .ui-lang-btn.active { background: var(--dark); color: var(--bg); }
+  .profile-bar { display: flex; gap: 0.4rem; margin-bottom: 1rem; align-items: center; }
+  .profile-select { flex: 1; padding: 0.5rem 0.6rem; border: 1px solid var(--border); background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 0.72rem; color: var(--dark); cursor: pointer; }
+  .profile-btn { padding: 0.5rem 0.8rem; border: 1px solid var(--border); background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 0.72rem; color: var(--dark); cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+  .profile-btn:hover { background: var(--dark); color: var(--bg); }
+  .profile-btn.danger { border-color: #c0392b; color: #c0392b; }
+  .profile-btn.danger:hover { background: #c0392b; color: white; }
   .error-msg { background: #fff5f5; border: 1px solid #ffcccc; color: #cc0000; padding: 1rem; font-size: 0.78rem; line-height: 1.6; }
   ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); }
 
@@ -169,6 +175,14 @@
 <div class="main">
   <div class="input-panel">
     <p class="panel-label" id="panelLabel">Brand Input</p>
+
+    <div class="profile-bar">
+      <select class="profile-select" id="profileSelect" onchange="loadProfile(this.value)">
+        <option value="">— Saved Brands —</option>
+      </select>
+      <button class="profile-btn" onclick="saveProfile()">Save</button>
+      <button class="profile-btn danger" id="deleteProfileBtn" onclick="deleteProfile()" style="display:none">Delete</button>
+    </div>
 
     <div class="form-group">
       <label class="form-label" id="labelBrandName">브랜드명 Brand Name</label>
@@ -442,7 +456,7 @@ ${extra ? 'Context: ' + extra : ''}
 ${refVibe ? 'Reference Brand Vibe (match this closely): ' + refVibe : ''}
 
 RULES:
-- For each post, generate exactly 5 powerful hashtags. Choose hashtags that are: specific enough to reach the right audience (not too broad like #beauty), have high engagement in the wellness/beauty space, and mix brand-level + niche community tags. Format as: ["#tag1","#tag2","#tag3","#tag4","#tag5"]. Include this as a "hashtags" field in the JSON.
+- For each post, generate exactly 5 hashtags that MAXIMIZE real Instagram reach. Use this mix: 2 large tags (1M+ posts, e.g. #skincare #beauty #wellness #selfcare #yoga), 2 medium tags (100k-1M posts, e.g. #skincarelovers #beautylovers #wellnesslifestyle #glowyskin #cleanskincare), 1 niche tag (10k-100k, specific to post content). ALL tags must be ones real people actively search and follow on Instagram. NO invented compound words. NO overly poetic tags. Think: what would a beauty editor or wellness influencer actually use. Format as: ["#tag1","#tag2","#tag3","#tag4","#tag5"]. Include as "hashtags" field in JSON.
 - CRITICAL LANGUAGE RULE: ${selectedLang === 'korean' ? 'ALL captions must be written in Korean ONLY. Absolutely no English words, phrases, or characters anywhere in the captions. Pure Korean throughout.' : selectedLang === 'english' ? 'ALL captions must be written in English ONLY. Absolutely no Korean characters (한글) anywhere. Not a single Korean word. Pure English throughout.' : 'Mix Korean and English naturally and elegantly — Korean for emotion, English for aesthetic keywords.'}
 - Never be sales-y — show lifestyle, not product
 - Captions feel like poetry, with intentional line breaks
@@ -599,6 +613,79 @@ Return ONLY raw JSON array, no markdown, no explanation:
     if (isEn) selectedLang = 'english';
     else selectedLang = 'mixed';
   }
+
+  // ── Brand Profile Storage ──
+  function getProfiles() {
+    try { return JSON.parse(localStorage.getItem('ritmo_profiles') || '{}'); } 
+    catch { return {}; }
+  }
+
+  function saveProfiles(profiles) {
+    localStorage.setItem('ritmo_profiles', JSON.stringify(profiles));
+  }
+
+  function refreshProfileSelect(selectVal) {
+    const profiles = getProfiles();
+    const sel = document.getElementById('profileSelect');
+    sel.innerHTML = '<option value="">— Saved Brands —</option>';
+    Object.keys(profiles).forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      if (name === selectVal) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    document.getElementById('deleteProfileBtn').style.display = selectVal ? 'block' : 'none';
+  }
+
+  function saveProfile() {
+    const name = document.getElementById('brandName').value.trim();
+    if (!name) { alert('브랜드명을 먼저 입력해주세요'); return; }
+    const profiles = getProfiles();
+    profiles[name] = {
+      brandName: name,
+      category: document.getElementById('category').value,
+      target: document.getElementById('target').value,
+      tone: selectedTone,
+      keywords: document.getElementById('keywords').value,
+      extra: document.getElementById('extra').value,
+    };
+    saveProfiles(profiles);
+    refreshProfileSelect(name);
+    const btn = document.querySelector('.profile-btn');
+    btn.textContent = 'Saved ✓';
+    setTimeout(() => btn.textContent = 'Save', 1500);
+  }
+
+  function loadProfile(name) {
+    if (!name) { document.getElementById('deleteProfileBtn').style.display = 'none'; return; }
+    const profiles = getProfiles();
+    const p = profiles[name];
+    if (!p) return;
+    document.getElementById('brandName').value = p.brandName || '';
+    document.getElementById('category').value = p.category || '';
+    document.getElementById('target').value = p.target || '';
+    document.getElementById('keywords').value = p.keywords || '';
+    document.getElementById('extra').value = p.extra || '';
+    if (p.tone) {
+      selectedTone = p.tone;
+      document.querySelectorAll('.tone-option').forEach(t => t.classList.toggle('selected', t.dataset.tone === p.tone));
+    }
+    document.getElementById('deleteProfileBtn').style.display = 'block';
+  }
+
+  function deleteProfile() {
+    const name = document.getElementById('profileSelect').value;
+    if (!name) return;
+    if (!confirm(name + ' 브랜드를 삭제할까요?')) return;
+    const profiles = getProfiles();
+    delete profiles[name];
+    saveProfiles(profiles);
+    refreshProfileSelect('');
+  }
+
+  // Init profiles on load
+  refreshProfileSelect('');
 </script>
 </body>
 </html>
