@@ -545,11 +545,20 @@ Return ONLY raw JSON array, no markdown, no explanation:
         ${post.music && post.music.length ? `
         <div class="card-section-title" style="margin-top:1.4rem;">🎵 Music Reference</div>
         <div style="display:flex;flex-direction:column;gap:0.5rem;">
-          ${post.music.map(m => `
-          <div style="background:var(--bg);border:1px solid var(--border);padding:0.8rem 1rem;display:flex;flex-direction:column;gap:0.2rem;">
-            <div style="font-size:0.82rem;color:var(--dark);">${m.title} <span style="color:var(--muted);font-size:0.75rem;">— ${m.artist}</span></div>
-            <div style="font-size:0.68rem;color:var(--gold);font-style:italic;">${m.vibe}</div>
-          </div>`).join('')}
+          ${post.music.map(m => {
+            const ytUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(m.title + ' ' + m.artist);
+            return `
+          <a href="${ytUrl}" target="_blank" rel="noopener" style="text-decoration:none;">
+          <div style="background:var(--bg);border:1px solid var(--border);padding:0.8rem 1rem;display:flex;align-items:center;gap:0.8rem;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="width:28px;height:28px;background:#FF0000;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="white"><polygon points="3,1 9,5 3,9"/></svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.15rem;">
+              <div style="font-size:0.82rem;color:var(--dark);">${m.title} <span style="color:var(--muted);font-size:0.75rem;">— ${m.artist}</span></div>
+              <div style="font-size:0.68rem;color:var(--gold);font-style:italic;">${m.vibe}</div>
+            </div>
+          </div></a>`;
+          }).join('')}
         </div>` : ''}
         <div class="card-actions">
           <button class="btn-copy" onclick="copyEl('cap-${i}', this, 'Copy Caption')">Copy Caption</button>
