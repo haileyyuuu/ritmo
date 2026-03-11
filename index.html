@@ -176,17 +176,16 @@
   <div class="input-panel">
     <p class="panel-label" id="panelLabel">Brand Input</p>
 
-    <div class="profile-bar">
-      <select class="profile-select" id="profileSelect" onchange="loadProfile(this.value)">
-        <option value="">— Saved Brands —</option>
-      </select>
-      <button class="profile-btn" onclick="saveProfile()">Save</button>
-      <button class="profile-btn danger" id="deleteProfileBtn" onclick="deleteProfile()" style="display:none">Delete</button>
-    </div>
-
     <div class="form-group">
       <label class="form-label" id="labelBrandName">브랜드명 Brand Name</label>
-      <input type="text" class="form-input" id="brandName" placeholder="e.g. Aurum, Blue Bottle, Nobu...">
+      <div style="display:flex;gap:0.4rem;align-items:center;">
+        <input type="text" class="form-input" id="brandName" placeholder="e.g. Aurum, Blue Bottle, Nobu..." style="flex:1;">
+        <button class="profile-btn" onclick="saveProfile()">Save</button>
+        <button class="profile-btn danger" id="deleteProfileBtn" onclick="deleteProfile()" style="display:none">Del</button>
+      </div>
+      <select class="profile-select" id="profileSelect" onchange="loadProfile(this.value)" style="margin-top:0.4rem;width:100%;">
+        <option value="">— Saved Brands —</option>
+      </select>
     </div>
 
     <div class="form-group">
@@ -255,6 +254,7 @@
         <div class="upload-sub" id="uploadSub">최대 3장 · JPG, PNG</div>
       </div>
       <input type="file" id="refImages" accept="image/*" multiple style="display:none" onchange="handleImageUpload(event)">
+      <p style="font-size:0.68rem;color:var(--gold);margin-top:0.5rem;letter-spacing:0.03em;">✦ 이미지를 업로드하면 브랜드 바이브를 분석해 더 정확한 콘텐츠가 생성돼요</p>
       <div id="imagePreview" style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem;"></div>
     </div>
 
