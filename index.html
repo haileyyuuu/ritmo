@@ -218,7 +218,7 @@
     </div>
 
     <div class="form-group">
-      <label class="form-label" id="labelTone">브랜드 톤 Brand Tone</label>
+      <label class="form-label" id="labelTone">브랜드 톤 Brand Tone <span style="color:var(--muted);font-size:0.65rem;">최대 2개</span></label>
       <div class="tone-grid">
         <div class="tone-option" data-tone="luxury minimal">Luxury Minimal</div>
         <div class="tone-option" data-tone="natural organic">Natural Organic</div>
@@ -259,8 +259,8 @@
     </div>
 
     <div class="form-group">
-      <label class="form-label" id="labelExtra">추가 정보 (선택)</label>
-      <textarea class="form-textarea" id="extra" placeholder="신제품 출시, 시즌 캠페인 등..."></textarea>
+      <label class="form-label" id="labelExtra">브랜드 디렉션 <span style="color:var(--gold);font-size:0.68rem;"> ✦ 결과물의 퀄리티를 결정하는 가장 중요한 항목</span></label>
+      <textarea class="form-textarea" id="extra" placeholder="브랜드 세계관, 원하는 분위기, 피해야 할 표현, 캠페인 방향 등 — 구체적일수록 콘텐츠 퀄리티가 높아져요. e.g. '감각적이고 느린 아침 같은 무드. 과하지 않고 자연스럽게 섹시한 느낌. 성분 강조보다 라이프스타일 중심으로.'" style="min-height:90px;"></textarea>
     </div>
 
     <div class="form-group">
@@ -303,7 +303,7 @@
 </div>
 
 <script>
-  let selectedTone = '';
+  let selectedTones = [];
   let selectedCount = 3;
   let selectedLang = 'mixed';
   let uiLang = 'ko';
@@ -335,9 +335,18 @@
   }
   document.querySelectorAll('.tone-option').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tone-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedTone = btn.dataset.tone;
+      const tone = btn.dataset.tone;
+      if (btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        selectedTones = selectedTones.filter(t => t !== tone);
+      } else {
+        if (selectedTones.length >= 2) {
+          const firstSelected = document.querySelector('.tone-option.selected');
+          if (firstSelected) { selectedTones = selectedTones.filter(t => t !== firstSelected.dataset.tone); firstSelected.classList.remove('selected'); }
+        }
+        btn.classList.add('selected');
+        selectedTones.push(tone);
+      }
     });
   });
 
@@ -450,7 +459,7 @@ Create exactly ${selectedCount} Instagram content pieces for:
 Brand: ${brandName}
 Category: ${category}
 Target: ${target || '20-35 year old women interested in wellness and beauty'}
-Tone: ${selectedTone || 'luxury minimal'}
+Tone: ${selectedTones.length ? selectedTones.join(' + ') : 'luxury minimal'}
 Keywords: ${keywords || 'ritual, glow, wellness, intentional living'}
 ${extra ? 'Context: ' + extra : ''}
 ${refVibe ? 'Reference Brand Vibe (match this closely): ' + refVibe : ''}
@@ -591,14 +600,14 @@ Return ONLY raw JSON array, no markdown, no explanation:
     document.getElementById('labelKeywords').textContent = isEn ? 'Keywords' : '핵심 키워드 Keywords';
     document.getElementById('labelRefUrl').textContent = isEn ? 'Reference Website (optional)' : '레퍼런스 웹사이트 (선택)';
     document.getElementById('labelRefImages').textContent = isEn ? 'Reference Images (optional)' : '레퍼런스 이미지 (선택)';
-    document.getElementById('labelExtra').textContent = isEn ? 'Additional Context (optional)' : '추가 정보 (선택)';
+    document.getElementById('labelExtra').innerHTML = isEn ? 'Brand Direction <span style="color:var(--gold);font-size:0.68rem;"> ✦ The most important field for content quality</span>' : '브랜드 디렉션 <span style="color:var(--gold);font-size:0.68rem;"> ✦ 결과물의 퀄리티를 결정하는 가장 중요한 항목</span>';
     document.getElementById('labelCount').textContent = isEn ? 'Content Count' : '콘텐츠 수';
     document.getElementById('labelImageToggle').textContent = isEn ? 'Auto-generate Images' : '이미지 자동 생성';
     document.getElementById('uploadText').textContent = isEn ? 'Upload feed photos or mood references' : '피드 사진 또는 바이브 레퍼런스 업로드';
     document.getElementById('uploadSub').textContent = isEn ? 'Up to 3 images · JPG, PNG' : '최대 3장 · JPG, PNG';
     document.getElementById('target').placeholder = isEn ? 'e.g. Women 25-35, wellness-conscious...' : 'e.g. 20~30대 여성, wellness-conscious...';
     document.getElementById('keywords').placeholder = isEn ? 'e.g. ritual, glow, clean beauty' : 'e.g. ritual, glow, clean beauty, intentional';
-    document.getElementById('extra').placeholder = isEn ? 'New product launch, seasonal campaign...' : '신제품 출시, 시즌 캠페인 등...';
+    document.getElementById('extra').placeholder = isEn ? 'Brand world, desired mood, things to avoid, campaign direction — the more specific, the better. e.g. "Glazed skin aesthetic. Slow, soft, indulgent tone. Lifestyle-first, not ingredient-heavy."' : '브랜드 세계관, 원하는 분위기, 피해야 할 표현, 캠페인 방향 등 — 구체적일수록 콘텐츠 퀄리티가 높아져요.';
     document.getElementById('emptyTitle').textContent = 'Ready to create.';
     document.getElementById('emptySub').textContent = isEn ? 'Enter your brand details to get started' : '브랜드 정보를 입력하고 생성해보세요';
     document.querySelector('#category option[value=""]').textContent = isEn ? 'Select category' : '선택해주세요';
@@ -646,7 +655,7 @@ Return ONLY raw JSON array, no markdown, no explanation:
       brandName: name,
       category: document.getElementById('category').value,
       target: document.getElementById('target').value,
-      tone: selectedTone,
+      tones: selectedTones,
       keywords: document.getElementById('keywords').value,
       extra: document.getElementById('extra').value,
     };
@@ -667,9 +676,9 @@ Return ONLY raw JSON array, no markdown, no explanation:
     document.getElementById('target').value = p.target || '';
     document.getElementById('keywords').value = p.keywords || '';
     document.getElementById('extra').value = p.extra || '';
-    if (p.tone) {
-      selectedTone = p.tone;
-      document.querySelectorAll('.tone-option').forEach(t => t.classList.toggle('selected', t.dataset.tone === p.tone));
+    if (p.tones) {
+      selectedTones = p.tones;
+      document.querySelectorAll('.tone-option').forEach(t => t.classList.toggle('selected', p.tones.includes(t.dataset.tone)));
     }
     document.getElementById('deleteProfileBtn').style.display = 'block';
   }
