@@ -150,6 +150,50 @@
     .output-panel { max-height: none; }
     nav, .hero-header, .input-panel, .output-panel, .api-banner { padding-left: 1.5rem; padding-right: 1.5rem; }
   }
+
+  /* ── Calendar ── */
+  .view-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 0; background: var(--white); padding: 0 2.5rem; }
+  .view-tab { padding: 0.75rem 1.2rem; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .view-tab.active { color: var(--dark); border-bottom-color: var(--gold); }
+  .cal-wrap { padding: 1.5rem 2rem; display: none; }
+  .cal-wrap.visible { display: block; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+  .cal-month-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; letter-spacing: 0.1em; }
+  .cal-nav { display: flex; gap: 0.4rem; }
+  .cal-nav-btn { width: 28px; height: 28px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.8rem; color: var(--muted); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .cal-nav-btn:hover { background: var(--dark); color: var(--bg); border-color: var(--dark); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .cal-day-header { background: var(--bg2); padding: 0.5rem; text-align: center; font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .cal-cell { background: var(--white); min-height: 90px; padding: 0.5rem; cursor: default; transition: background 0.15s; }
+  .cal-cell.other-month { background: var(--bg); opacity: 0.4; }
+  .cal-cell.today .cal-date { background: var(--gold); color: var(--white); border-radius: 50%; }
+  .cal-date { font-size: 0.68rem; color: var(--muted); width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.3rem; }
+  .post-chip { background: var(--dark); color: var(--bg); padding: 0.22rem 0.45rem; font-size: 0.58rem; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.25rem; border-left: 2px solid var(--gold); cursor: pointer; transition: opacity 0.15s; }
+  .post-chip:hover { opacity: 0.75; }
+  .post-chip-type { color: var(--gold); font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.08em; flex-shrink: 0; }
+  .post-chip-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+  /* Modal */
+  .cal-modal { position: fixed; inset: 0; background: rgba(26,22,18,0.55); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+  .cal-modal.open { display: flex; }
+  .cal-modal-box { background: var(--white); width: 92%; max-width: 500px; max-height: 88vh; overflow-y: auto; animation: modalIn 0.2s ease; }
+  @keyframes modalIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .cal-modal-header { padding: 1.2rem 1.5rem 0.8rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; }
+  .cal-modal-date { font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.2rem; }
+  .cal-modal-type { font-size: 0.7rem; color: var(--muted); }
+  .cal-modal-close { background: none; border: none; font-size: 1.1rem; color: var(--muted); cursor: pointer; }
+  .cal-modal-body { padding: 1.2rem 1.5rem; }
+  .cal-modal-label { font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; margin-top: 1rem; }
+  .cal-modal-label:first-child { margin-top: 0; }
+  .cal-modal-dir { font-size: 0.75rem; color: var(--muted); line-height: 1.6; font-style: italic; background: var(--bg); padding: 0.7rem; border-left: 2px solid var(--gold); }
+  .cal-modal-caption { font-size: 0.82rem; line-height: 1.8; white-space: pre-line; }
+  .cal-modal-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+  .cal-modal-tag { font-size: 0.68rem; color: var(--gold); background: var(--bg); padding: 0.18rem 0.5rem; border: 1px solid var(--border); }
+  .cal-modal-music { display: flex; flex-direction: column; gap: 0.35rem; }
+  .cal-modal-music-item { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.7rem; border: 1px solid var(--border); background: var(--bg); text-decoration: none; transition: border-color 0.2s; }
+  .cal-modal-music-item:hover { border-color: var(--gold); }
+  .cal-yt-icon { width: 22px; height: 22px; background: #FF0000; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cal-modal-music-title { font-size: 0.76rem; color: var(--dark); }
+  .cal-modal-music-vibe { font-size: 0.63rem; color: var(--gold); font-style: italic; }
 </style>
 </head>
 <body>
@@ -292,13 +336,60 @@
     </button>
   </div>
 
-  <div class="output-panel">
-    <div class="empty-state" id="emptyState">
-      <div class="empty-icon">✦</div>
-      <div class="empty-title" id="emptyTitle">Ready to create.</div>
-      <div class="empty-sub" id="emptySub">브랜드 정보를 입력하고 생성해보세요</div>
+  <div class="output-panel" style="padding:0;">
+    <div class="view-tabs" id="viewTabs" style="display:none;">
+      <div class="view-tab active" onclick="switchView('grid')">Grid View</div>
+      <div class="view-tab" onclick="switchView('calendar')">Calendar View</div>
     </div>
-    <div class="content-grid" id="contentGrid" style="display:none;"></div>
+    <div id="gridView" style="padding:2rem 2.5rem;">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">✦</div>
+        <div class="empty-title" id="emptyTitle">Ready to create.</div>
+        <div class="empty-sub" id="emptySub">브랜드 정보를 입력하고 생성해보세요</div>
+      </div>
+      <div class="content-grid" id="contentGrid" style="display:none;"></div>
+    </div>
+    <div class="cal-wrap" id="calView">
+      <div class="cal-header">
+        <div class="cal-month-title" id="calMonthTitle"></div>
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="calChangeMonth(-1)">←</button>
+          <button class="cal-nav-btn" onclick="calChangeMonth(1)">→</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="calGrid">
+        <div class="cal-day-header">Sun</div>
+        <div class="cal-day-header">Mon</div>
+        <div class="cal-day-header">Tue</div>
+        <div class="cal-day-header">Wed</div>
+        <div class="cal-day-header">Thu</div>
+        <div class="cal-day-header">Fri</div>
+        <div class="cal-day-header">Sat</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar Modal -->
+  <div class="cal-modal" id="calModal" onclick="calCloseModal(event)">
+    <div class="cal-modal-box">
+      <div class="cal-modal-header">
+        <div>
+          <div class="cal-modal-date" id="calModalDate"></div>
+          <div class="cal-modal-type" id="calModalType"></div>
+        </div>
+        <button class="cal-modal-close" onclick="calCloseDirect()">×</button>
+      </div>
+      <div class="cal-modal-body">
+        <div class="cal-modal-label">📷 Image Direction</div>
+        <div class="cal-modal-dir" id="calModalDir"></div>
+        <div class="cal-modal-label">✦ Caption</div>
+        <div class="cal-modal-caption" id="calModalCaption"></div>
+        <div class="cal-modal-label"># Hashtags</div>
+        <div class="cal-modal-tags" id="calModalTags"></div>
+        <div class="cal-modal-label">🎵 Music</div>
+        <div class="cal-modal-music" id="calModalMusic"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -450,32 +541,53 @@
     btn.disabled = true; btn.classList.add('loading');
     showSkeletons(selectedCount, withImages);
 
-    const isFnB = ['cafe','restaurant','bakery','bar'].includes(category);
-    const isLifestyle = ['fashion','interior','fitness','pet'].includes(category);
-    const expertType = isFnB ? 'F&B and hospitality brands' : isLifestyle ? 'lifestyle brands' : 'wellness, beauty, and lifestyle brands';
-    const prompt = `You are RITMO, an expert Instagram content creator for ${expertType} with a luxury, editorial aesthetic.
+        const prompt = `You are a senior creative director and copywriter who has worked with Aesop, Rhode, Glossier, Loewe, and Le Labo. You understand that the best brand content never feels like content — it feels like a point of view.
 
-Create exactly ${selectedCount} Instagram content pieces for:
+Your job: write ${selectedCount} Instagram posts for ${brandName}, a ${category} brand.
+
+━━━ BRAND BRIEF ━━━
 Brand: ${brandName}
 Category: ${category}
-Target: ${target || '20-35 year old women interested in wellness and beauty'}
-Tone: ${selectedTones.length ? selectedTones.join(' + ') : 'luxury minimal'}
-Keywords: ${keywords || 'ritual, glow, wellness, intentional living'}
-${extra ? 'Context: ' + extra : ''}
-${refVibe ? 'Reference Brand Vibe (match this closely): ' + refVibe : ''}
+Target audience: ${target || 'Women 25–38, aesthetics-driven, wellness-conscious, high disposable income'}
+Brand tone: ${selectedTones.length ? selectedTones.join(' + ') : 'luxury minimal'}
+Core keywords: ${keywords || 'ritual, intention, glow, slow beauty'}
+${extra ? 'Brand direction (THIS IS THE MOST IMPORTANT INPUT — follow it precisely): ' + extra : ''}
+${refVibe ? 'Reference brand analysis (match this aesthetic closely): ' + refVibe : ''}
 
-RULES:
-- For each post, generate exactly 5 hashtags that MAXIMIZE real Instagram reach. Use this mix: 2 large tags (1M+ posts, e.g. #skincare #beauty #wellness #selfcare #yoga), 2 medium tags (100k-1M posts, e.g. #skincarelovers #beautylovers #wellnesslifestyle #glowyskin #cleanskincare), 1 niche tag (10k-100k, specific to post content). ALL tags must be ones real people actively search and follow on Instagram. NO invented compound words. NO overly poetic tags. Think: what would a beauty editor or wellness influencer actually use. Format as: ["#tag1","#tag2","#tag3","#tag4","#tag5"]. Include as "hashtags" field in JSON.
-- CRITICAL LANGUAGE RULE: ${selectedLang === 'korean' ? 'ALL captions must be written in Korean ONLY. Absolutely no English words, phrases, or characters anywhere in the captions. Pure Korean throughout.' : selectedLang === 'english' ? 'ALL captions must be written in English ONLY. Absolutely no Korean characters (한글) anywhere. Not a single Korean word. Pure English throughout.' : 'Mix Korean and English naturally and elegantly — Korean for emotion, English for aesthetic keywords.'}
-- Never be sales-y — show lifestyle, not product
-- Captions feel like poetry, with intentional line breaks
-- Image directions: cinematic, specific, no faces, focus on objects/hands/atmosphere
-- Each post has a distinct mood/theme
-- Every caption must include ONE subtle engagement hook — a question, an open-ended thought, or a relatable feeling that makes people want to comment or share. Never forced or sales-y. Examples: "오늘 당신의 루틴은?" / "Which one are you — morning ritual or evening wind-down?" / "Tag someone who needs this." Keep it natural and poetic, never clickbait.
+━━━ CAPTION RULES ━━━
+1. VOICE: Write like a real human who lives this brand — not a marketing bot. Read each caption out loud. If it sounds like an ad, rewrite it.
+2. SPECIFICITY: Avoid generic wellness words (ritual, journey, glow, radiant, intentional) unless they appear in the brand keywords. Use concrete, sensory, unexpected language instead.
+3. STRUCTURE: Short lines. Deliberate white space. Rhythm matters. Think poetry, not prose.
+4. LENGTH: 3–6 lines max. Brevity is luxury.
+5. HOOK: End with ONE natural engagement trigger — a question, an observation, or an open line that makes people want to respond. Never: "Drop a emoji below!" Always: something that feels like genuine curiosity.
+6. EMOTION FIRST: Lead with feeling, not product. The product is never the hero — the feeling it creates is.
+7. NO CLICHÉS: Ban these words unless in brand keywords: journey, ritual, elevate, curate, nourish, transform, discover, explore, unlock, radiant, glow up, self-care Sunday.
 
-- For each post, recommend 2-3 real songs that match the mood. Think Frank Ocean, SZA, Solange, Jhene Aiko, Daniel Caesar, FKA Twigs, Sade, Air, Bon Iver, Cigarettes After Sex, Khruangbin, Blood Orange, Yaeji and similar artists.
-Return ONLY raw JSON array, no markdown, no explanation:
-[{"number":1,"type":"Lifestyle","imageDirection":"Cinematic prompt: specific objects, lighting, composition, mood. No faces. 2-3 sentences.","caption":"Full caption with line breaks for rhythm, max 2 emojis, ends with subtle engagement hook","hashtags":["#tag1","#tag2","#tag3","#tag4","#tag5"],"music":[{"title":"Song Title","artist":"Artist Name","vibe":"why this fits in one short sentence"},{"title":"Song Title","artist":"Artist Name","vibe":"why this fits"}]}]`;
+━━━ LANGUAGE ━━━
+${selectedLang === 'korean' ? 'KOREAN ONLY. Not a single English character. Write like a Korean creative director at a luxury brand — poetic but grounded, never corporate.' : selectedLang === 'english' ? 'ENGLISH ONLY. Not a single Korean character. Write like a New York or London-based brand copywriter.' : 'Mix Korean and English the way a bilingual creative director would — Korean carries the emotion, English carries the aesthetic edge. Switch mid-caption when it feels right, not by formula.'}
+
+━━━ IMAGE DIRECTION ━━━
+- No faces. Ever.
+- Be a cinematographer: specify exact objects, light quality, time of day, color temperature, texture, composition angle, depth of field.
+- Reference real photographers or publications if helpful (e.g. "Rinko Kawauchi lighting", "Cereal Magazine composition").
+- Each post needs a completely different visual world.
+
+━━━ POST VARIETY ━━━
+Rotate through different chapter types: product texture close-up / lifestyle atmosphere / behind-the-ritual / emotional or philosophical / seasonal or time-based. Each post is a different world.
+
+━━━ HASHTAGS ━━━
+5 tags per post. Real tags people follow and search. Mix:
+- 2 large (1M+ posts): #skincare #beauty #selfcare #wellness etc.
+- 2 medium (100k–1M): #skincarelovers #cleanbeauty #glowyskin etc.
+- 1 precise niche (10k–100k): specific to exact post content.
+NO invented tags. NO poetic compound words nobody searches.
+
+━━━ MUSIC ━━━
+2–3 real songs matching the post mood. Think: Frank Ocean, SZA, Solange, Jhené Aiko, Daniel Caesar, FKA twigs, Sade, Bon Iver, Cigarettes After Sex, Khruangbin, Blood Orange, Yaeji, Arooj Aftab, Weyes Blood. Match energy precisely.
+
+━━━ OUTPUT ━━━
+Return ONLY a raw JSON array. No markdown. No explanation. No preamble.
+[{"number":1,"type":"Product Texture","imageDirection":"Precise cinematic direction — specific objects, light, angle, mood, color. 2-3 sentences.","caption":"Caption here\nwith line breaks\n\nEngagement hook.","hashtags":["#tag1","#tag2","#tag3","#tag4","#tag5"],"music":[{"title":"Song Title","artist":"Artist Name","vibe":"one precise sentence"},{"title":"Song Title","artist":"Artist Name","vibe":"one precise sentence"}]}]`;
 
     try {
       // Build message content with optional images
@@ -505,7 +617,9 @@ Return ONLY raw JSON array, no markdown, no explanation:
       const jsonMatch = clean.match(/\[[\s\S]*\]/);
       if (!jsonMatch) throw new Error('JSON 없음. 응답: ' + text.slice(0, 200));
       const posts = JSON.parse(jsonMatch[0]);
+      calPosts = assignDates(posts);
       renderContent(posts, withImages);
+      document.getElementById('viewTabs').style.display = 'flex';
     } catch (err) {
       document.getElementById('contentGrid').innerHTML = '<div class="error-msg">콘텐츠 생성 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.<br><small>' + err.message + '</small></div>';
     } finally {
@@ -667,6 +781,7 @@ Return ONLY raw JSON array, no markdown, no explanation:
       tones: selectedTones,
       keywords: document.getElementById('keywords').value,
       extra: document.getElementById('extra').value,
+      calPosts: calPosts,
     };
     saveProfiles(profiles);
     refreshProfileSelect(name);
@@ -689,6 +804,10 @@ Return ONLY raw JSON array, no markdown, no explanation:
       selectedTones = p.tones;
       document.querySelectorAll('.tone-option').forEach(t => t.classList.toggle('selected', p.tones.includes(t.dataset.tone)));
     }
+    if (p.calPosts && p.calPosts.length) {
+      calPosts = p.calPosts;
+      document.getElementById('viewTabs').style.display = 'flex';
+    }
     document.getElementById('deleteProfileBtn').style.display = 'block';
   }
 
@@ -704,6 +823,116 @@ Return ONLY raw JSON array, no markdown, no explanation:
 
   // Init profiles on load
   refreshProfileSelect('');
+
+  // ── Calendar ──
+  let calPosts = [];
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const BEST_DAYS = [2, 4, 6]; // Tue, Thu, Sat — best for wellness brands
+
+  function assignDates(posts) {
+    const today = new Date();
+    let year = today.getFullYear();
+    let month = today.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const slots = [];
+    for (let d = today.getDate() + 1; d <= daysInMonth; d++) {
+      const day = new Date(year, month, d).getDay();
+      if (BEST_DAYS.includes(day)) slots.push(`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+    }
+    // Fill next month if needed
+    if (slots.length < posts.length) {
+      const nm = month === 11 ? 0 : month + 1;
+      const ny = month === 11 ? year + 1 : year;
+      const dim = new Date(ny, nm + 1, 0).getDate();
+      for (let d = 1; d <= dim && slots.length < posts.length; d++) {
+        const day = new Date(ny, nm, d).getDay();
+        if (BEST_DAYS.includes(day)) slots.push(`${ny}-${String(nm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+      }
+    }
+    return posts.map((p, i) => ({ ...p, date: slots[i] || '' }));
+  }
+
+  function switchView(view) {
+    document.querySelectorAll('.view-tab').forEach((t, i) => t.classList.toggle('active', (view === 'grid' && i === 0) || (view === 'calendar' && i === 1)));
+    document.getElementById('gridView').style.display = view === 'grid' ? 'block' : 'none';
+    document.getElementById('calView').classList.toggle('visible', view === 'calendar');
+    if (view === 'calendar') renderCal();
+  }
+
+  function renderCal() {
+    const grid = document.getElementById('calGrid');
+    while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+    document.getElementById('calMonthTitle').textContent = MONTH_NAMES[calMonth] + ' ' + calYear;
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+    const today = new Date();
+
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell other-month';
+      cell.innerHTML = `<div class="cal-date">${daysInPrev - i}</div>`;
+      grid.appendChild(cell);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isToday = today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === d;
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell' + (isToday ? ' today' : '');
+      const dayPosts = calPosts.filter(p => p.date === dateStr);
+      let html = `<div class="cal-date">${d}</div>`;
+      dayPosts.forEach((post) => {
+        const idx = calPosts.indexOf(post);
+        const title = (post.caption || '').split('\n')[0].slice(0, 18);
+        html += `<div class="post-chip" onclick="calOpenModal(${idx})">
+          <span class="post-chip-type">${post.type || ''}</span>
+          <span class="post-chip-title">${title}...</span>
+        </div>`;
+      });
+      cell.innerHTML = html;
+      grid.appendChild(cell);
+    }
+    const totalCells = grid.children.length - 7;
+    const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (let i = 1; i <= remaining; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell other-month';
+      cell.innerHTML = `<div class="cal-date">${i}</div>`;
+      grid.appendChild(cell);
+    }
+  }
+
+  function calChangeMonth(dir) {
+    calMonth += dir;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCal();
+  }
+
+  function calOpenModal(idx) {
+    const post = calPosts[idx];
+    if (!post) return;
+    const d = new Date((post.date || '') + 'T00:00:00');
+    document.getElementById('calModalDate').textContent = post.date ? MONTH_NAMES[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() : '';
+    document.getElementById('calModalType').textContent = post.type || '';
+    document.getElementById('calModalDir').textContent = post.imageDirection || '';
+    document.getElementById('calModalCaption').textContent = post.caption || '';
+    document.getElementById('calModalTags').innerHTML = (post.hashtags || []).map(t => `<span class="cal-modal-tag">${t}</span>`).join('');
+    document.getElementById('calModalMusic').innerHTML = (post.music || []).map(m => {
+      const ytUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(m.title + ' ' + m.artist);
+      return `<a href="${ytUrl}" target="_blank" rel="noopener" class="cal-modal-music-item">
+        <div class="cal-yt-icon"><svg width="8" height="8" viewBox="0 0 10 10" fill="white"><polygon points="3,1 9,5 3,9"/></svg></div>
+        <div><div class="cal-modal-music-title">${m.title} <span style="color:var(--muted);font-size:0.7rem;">— ${m.artist}</span></div><div class="cal-modal-music-vibe">${m.vibe}</div></div>
+      </a>`;
+    }).join('');
+    document.getElementById('calModal').classList.add('open');
+  }
+
+  function calCloseModal(e) { if (e.target === document.getElementById('calModal')) calCloseDirect(); }
+  function calCloseDirect() { document.getElementById('calModal').classList.remove('open'); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') calCloseDirect(); });
 </script>
 </body>
 </html>
